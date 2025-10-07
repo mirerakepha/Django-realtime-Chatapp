@@ -5,6 +5,7 @@ from django.db.models import Model
 
 class ChatGroup(models.Model):
     group_name = models.CharField(max_length=100, unique=True)
+    users_online = models.ManyToManyField(User, related_name="users_online", blank=True)
 
     def __str__(self):
         return self.group_name

@@ -18,3 +18,11 @@
 <script>scrollToBottom()</script>
 
 </div>
+
+{% with user=message.author %}
+    {% if user in chat_group.users_online.all %}
+        <div id="user-{{ user.id }}" class="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-green-400 border-2 border-gray-800"></div>
+    {% else %}
+        <div id="user-{{ user.id }}" class="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-gray-400 border-2 border-gray-800"></div>
+    {% endif %}
+{% endwith %}

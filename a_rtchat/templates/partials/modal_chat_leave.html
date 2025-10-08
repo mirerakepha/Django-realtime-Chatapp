@@ -1,0 +1,71 @@
+<div x-data="{ modal_open: false }" @keydown.escape.window="modal_open = false">
+    <!-- Trigger button -->
+    <button
+        @click="modal_open = true"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition"
+    >
+        Leave Chat
+    </button>
+
+    <!-- Modal -->
+    <div
+        x-show="modal_open"
+        x-cloak
+        class="fixed inset-0 flex items-center justify-center z-50"
+        aria-labelledby="modal-title"
+        role="dialog"
+        aria-modal="true"
+    >
+        <!-- Overlay -->
+        <div
+            class="fixed inset-0 bg-black bg-opacity-60 transition-opacity"
+            @click="modal_open = false"
+        ></div>
+
+        <!-- Modal Box -->
+        <div
+            class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6 z-50 transform transition-all"
+            x-transition:enter="ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="ease-in duration-150"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+        >
+            <!-- Close Button -->
+            <button
+                @click="modal_open = false"
+                class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
+            >
+                ✕
+            </button>
+
+            <!-- Content -->
+            <h2 id="modal-title" class="text-xl font-semibold text-gray-800 mb-4">Confirm Leave</h2>
+            <p class="text-gray-600 mb-6">
+                Are you sure you want to leave
+                <span class="font-medium">{{ chat_group.group_name }}</span>?
+            </p>
+
+            <!-- Form -->
+            <form method="post" action="{% url 'chatroom-leave' chat_group.group_name %}">
+                {% csrf_token %}
+                <div class="flex justify-end gap-3">
+                    <button
+                        type="button"
+                        @click="modal_open = false"
+                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    >
+                        Leave Chat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,29 @@
-venv/
-media/
-db.sqlite3
+# Python
 *.pyc
+*.pyo
+__pycache__/
+*.log
+
+# Virtual environment
+venv/
+.venv/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Env
+.env
+a_core/.env
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node (since you’re using Tailwind)
+node_modules/
+package-lock.json

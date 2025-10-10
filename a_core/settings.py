@@ -12,7 +12,16 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
-from twisted.words.protocols.irc import CHANNEL_PREFIXES
+import dj_database_url
+from environ import Env
+
+
+
+env = Env()
+env.read_env()
+ENVIRONMENT = env("ENVIRONMENT", default="production")
+
+#ENVIRONMENT = "production"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +31,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rj#-z^kx3j+1ay397otg6j8m_8#v^$^$jys6&41vy^&6le)ezc'
+SECRET_KEY = env("SECRET_KEY")
+
+ENCRYPT_KEY = env("ENCRYPT_KEY", default=None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if ENVIRONMENT == "development":
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+
+INTERNAL_IPS = (
+    '127.0.0.1',
+    'localhost:8000',
+)
 
 
 # Application definition
@@ -41,6 +60,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_cleanup.apps.CleanupConfig',
+    'django.contrib.sites',
+    'cloudinary_storage',
+    'cloudinary',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -49,6 +71,8 @@ INSTALLED_APPS = [
     'a_users',
     'a_rtchat',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -108,14 +133,18 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+
+#if ENVIRONMENT == "development":
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
+#else:
+POSTGRES_LOCALLY = False #-> when migrating to railway use True
+if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True:
+    DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -152,10 +181,19 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [ BASE_DIR / 'static' ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media' 
 
+if ENVIRONMENT == "development":
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUDINARY_URL': env("CLOUDINARY_URL"),
+    }
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -163,6 +201,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'#(change from console to smtp)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("EMAIL_ADDRESS")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = f"RTchat <{env('EMAIL_ADDRESS')}>"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
+
